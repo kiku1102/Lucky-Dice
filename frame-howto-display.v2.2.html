@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset='utf-8'>
+    <title>Lucky Dice Casino</title>
+    <meta name='viewport' content='width=device-width, initial-scale=1'>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</head>
+<style>
+    .picture-cover {
+        background-image: url("LuckyDiceImages/cover.jpg");
+        min-height: 100px;
+        margin: 5px;
+    }
+</style>
+
+<body>
+    <div class="container-fluid">
+        <div class="picture-cover"></div>
+    </div>
+    <div class="container">
+        <div class="row ">
+            <div class="col-sm-5">
+                <div class="row form-group">
+                    <div class="col-12">
+                        <h4>Nhập thông tin của bạn</h4>
+                    </div>
+                </div>
+
+                <div class="row form-group">
+                    <div class="col-4">
+                        <label>Username</label>
+                    </div>
+                    <div class="col-8">
+                        <input id="inp-user-name" class="form-control" type="text">
+                    </div>
+                </div>
+                <div class="row form-group">
+                    <div class="col-4 ">
+                        <label>Firstname</label>
+                    </div>
+                    <div class="col-8 ">
+                        <input id="inp-first-name" class="form-control" type="text">
+                    </div>
+                </div>
+
+                <div class="row form-group">
+                    <div class="col-4">
+                        <label>Lastname</label>
+                    </div>
+                    <div class="col-8 ">
+                        <input id="inp-last-name" class="form-control" type="text">
+                    </div>
+                </div>
+
+                <div class="row form-group">
+                    <div class="col-4">
+                        <label></label>
+                    </div>
+                    <div class="col-8">
+                        <p id="p-notification-validate"></p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-4 text-center ">
+                <div class="row form-group">
+                    <div class="col-12">
+                        <input id="btn-dice" class="btn btn-success button-width w-75" onclick="onBtnDiceClick()"
+                            value="Ném" type="button">
+                    </div>
+                </div>
+
+                <div class="row form-group">
+                    <div class="col-12 ">
+                        <img id="img-dice" class="img-thumbnail" src="LuckyDiceImages/dice.png">
+                    </div>
+                </div>
+                <div class="row form-group">
+                    <div class="col-12">
+                        <p id="p-notification-dice">Chúc mừng</p>
+                    </div>
+                </div>
+
+            </div>
+            <div class="col-sm-3 text-center">
+                <div class="row form-group">
+                    <div class="col-12 ">
+                        <p>Voucher</p>
+                        <p id="p-voucher-id">No ID</p>
+                        <p id="p-voucher-percent">0%</p>
+                    </div>
+                </div>
+
+                <div class="row form-group">
+                    <div class="col-12">
+                        <img id="img-present" class="img-thumbnail" src="LuckyDiceImages/motobike.jpg">
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="form-group">
+            <div class="row text-center">
+                <div class="col-12 ">
+                    <input id="btn-dice-history" class="btn btn-primary button-width w-25" value="Dice History"
+                        onclick="onBtnClickDiceHistoryClick()" type="button">
+                    <input id="btn-voucher-history" class="btn btn-primary button-width w-25" value="Voucher History"
+                        onclick="onBtnClickVoucherHistoryClick()" type="button">
+                    <input id="btn-present-history" class="btn btn-primary button-width w-25" value="Present History"
+                        onclick="onBtnPrizeHistoryClick()" type="button">
+                </div>
+            </div>
+        </div>
+
+        <div class="row ">
+            <div class="col-12 ">
+                <table id="hisory-placeholder-table" class="table table-striped table-hover border">
+                    <tr>
+                        <th>Lượt</th>
+                        <th>Dice</th>
+                    </tr>
+                    <tr>
+                        <td>1</td>
+                        <td>2</td>
+                    </tr>
+                    <tr>
+                        <td>2</td>
+                        <td>6</td>
+                    </tr>
+                    <tr>
+                        <td>3</td>
+                        <td>4</td>
+                    </tr>
+                    <tr>
+                        <td>4</td>
+                        <td>5</td>
+                    </tr>
+                    <tr>
+                        <td>5</td>
+                        <td>4</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </div>
+</body>
+<script>
+    "use strict";
+    /*** REGION 1 - Global variables - Vùng khai báo biến, hằng số, tham số TOÀN CỤC */
+    const gEND_bROW_TABLE = -1;
+    const gREQUEST_STATUS_OK = 200;
+    const gREQUEST_READY_STATUS_FINISH_AND_OK = 4;
+    const gBASE_URL = "http://42.115.221.44:8080/devcamp-lucky-dice/";
+    const gBASE_URL_1 = "http://42.115.221.44:8080/devcamp-lucky-dice";
+    const gUTF8_TEXT_APPLICATION_HEADER = "application/json;charset=UTF-8";
+    var gDataObject = {
+        username: "",
+        firstname: "",
+        lastname: ""
+    };
+    var vSelctDiceHistory = document.getElementById("btn-dice-history");
+    var vSelectVoucherHistory = document.getElementById("btn-voucher-history");
+    var vSelctPresentHistory = document.getElementById("btn-present-history");
+
+    /*** REGION 2 - Vùng gán / thực thi sự kiện cho các elements */
+
+    /*** REGION 3 - Event handlers - Vùng khai báo các hàm xử lý sự kiện */
+    // Task 23.20
+    function onBtnDiceClick() {
+        "use strict";
+        // B1: Thu thap du lieu
+        getInfoPerson(gDataObject);
+        // B2: Validate
+        var vIsvalidate = isValidate(gDataObject);
+        if (vIsvalidate) {
+            var vXmlHttpDice = new XMLHttpRequest();
+            // B3: Goi api (server)
+            callApi(vXmlHttpDice);
+            // B4: xử lý respontext trả về
+            handlerProcess(vXmlHttpDice);
+        }
+    }
+    //Task 23.30
+    function onBtnClickDiceHistoryClick() {
+        "use strict";
+        vSelctDiceHistory.className = "btn btn-success";
+        vSelectVoucherHistory.className = "btn btn-primary";
+        vSelctPresentHistory.className = "btn btn-primary";
+        // B1 thu thập dữ liệu
+        getInfoPerson(gDataObject);
+        // B2 Validate
+        var vIsvalidate = isValidate(gDataObject);
+        if (vIsvalidate) {
+            var vXmlHttpDiceHistory = new XMLHttpRequest();
+            // B3 Gọi API       
+            callApiDiceHistory(vXmlHttpDiceHistory);
+            // B4 xử lý trả về
+            handlerProcess1(vXmlHttpDiceHistory);
+        }
+    }
+    // Task 23.40
+    function onBtnClickVoucherHistoryClick() {
+        "use strict";
+        vSelctDiceHistory.className = "btn btn-primary";
+        vSelectVoucherHistory.className = "btn btn-success";
+        vSelctPresentHistory.className = "btn btn-primary";
+        // B1 thu thập dữ liệu
+        getInfoPerson(gDataObject);
+        // B2 Validate
+        var vIsvalidate = isValidate(gDataObject);
+        if (vIsvalidate) {
+            var vXmlHttpVoucherHistory = new XMLHttpRequest();
+            // B3 Gọi API
+            callApiVouchHistory(vXmlHttpVoucherHistory);
+            // B4 xử lý trả về    
+            handlerProcess2(vXmlHttpVoucherHistory);
+        }
+    }
+    // Task 23.50
+    function onBtnPrizeHistoryClick() {
+        "use strict";
+        vSelctDiceHistory.className = "btn btn-primary";
+        vSelectVoucherHistory.className = "btn btn-primary";
+        vSelctPresentHistory.className = "btn btn-success";
+        // B1 thu thập dữ liệu
+        getInfoPerson(gDataObject);
+        // B2 Validate
+        var vIsvalidate = isValidate(gDataObject);
+        if (vIsvalidate) {
+            var vXmlHtt0pPrizeHistory = new XMLHttpRequest();
+            // B3 Gọi API
+            callApiPrizehHistory(vXmlHtt0pPrizeHistory);
+            // B4 xử lý dữ liệu trả về
+            handlerProcess3(vXmlHtt0pPrizeHistory);
+        }
+    }
+    /*** REGION 4 - Common funtions - Vùng khai báo hàm dùng chung trong toàn bộ chương trình*/
+    function getInfoPerson(paramDataPerson) {
+        var vUserName = document.getElementById("inp-user-name");
+        var vFirstName = document.getElementById("inp-first-name");
+        var vLastName = document.getElementById("inp-last-name");
+
+        paramDataPerson.username = vUserName.value.trim();
+        paramDataPerson.firstname = vFirstName.value.trim();
+        paramDataPerson.lastname = vLastName.value.trim();
+    }
+    function isValidate(paramDataPerson) {
+        if (paramDataPerson.username == "") {
+            alert("vui lòng nhập Username");
+            return false;
+        }
+        if (paramDataPerson.firstname == "") {
+            alert("vui lòng nhập Firstname");
+            return false;
+        }
+        if (paramDataPerson.lastname == "") {
+            alert("vui lòng nhập Lastname");
+            return false;
+        }
+        return true;
+    }
+    function callApi(vXmlHttpDice) {
+        "use strict";
+
+        vXmlHttpDice.open("POST", gBASE_URL + "/dice", true);
+        vXmlHttpDice.setRequestHeader("Content-Type", gUTF8_TEXT_APPLICATION_HEADER);
+        vXmlHttpDice.send(JSON.stringify(gDataObject));
+    }
+    function handlerProcess(vXmlHttpDice) {
+        "use strict";
+        vXmlHttpDice.onreadystatechange = function () {
+            if (this.readyState == gREQUEST_READY_STATUS_FINISH_AND_OK && this.status == gREQUEST_STATUS_OK) {  //nếu trạng thái của response ready và ok
+                console.log(vXmlHttpDice.responseText);
+
+                //parsing to object
+                var vResponse = JSON.parse(vXmlHttpDice.responseText);
+                console.log(vResponse);
+
+                //  get result dice
+                var vDiceReady = vResponse.dice;
+                console.log("dice result:= " + vDiceReady);
+                changeDiceImage(vDiceReady);
+                changeMessage(vDiceReady);
+                if (vResponse.voucher != null) {
+                    changeVoucher(vResponse.voucher);
+                }
+                else {
+                    var vVoucher = document.getElementById("p-voucher-id");
+                    vVoucher.innerHTML = "";
+                    var vDiscout = document.getElementById("p-voucher-percent");
+                    vDiscout.innerHTML = "";
+                }
+
+                if (vResponse.prize != null) {
+                    changePrize(vResponse.prize);
+                }
+                else {
+                    var vPrize = document.getElementById("img-present");
+                    vPrize.src = "LuckyDiceImages/no-present.jpg";
+                }
+            }
+        }
+    }
+
+    function changeDiceImage(paramDiceReady) {
+        "use strict";
+        var vImgDice = document.getElementById("img-dice");
+        vImgDice.src = "LuckyDiceImages/" + paramDiceReady + ".png"
+    }
+    function changeMessage(paramDiceReady) {
+        "use strict";
+        var vNoti = document.getElementById("p-notification-dice");
+        if (paramDiceReady < 4) {
+            vNoti.innerHTML = " Chúc mừng bạn hãy thử lại";
+        } else {
+            vNoti.innerHTML = " Chúc mừng bạn hãy chơi tiếp";
+        }
+    }
+    function changeVoucher(paramVoucher) {
+        "use strict";
+        var vVoucher = document.getElementById("p-voucher-id");
+        vVoucher.innerHTML = paramVoucher.maVoucher;
+        var vDiscout = document.getElementById("p-voucher-percent");
+        vDiscout.innerHTML = paramVoucher.phanTramGiamGia;
+    }
+    function changePrize(paramPrize) { // null, Mũ, Xe má, Ô tô
+        "use strict";
+        var vPrize = document.getElementById("img-present");
+        if (paramPrize == "Mũ") {
+            vPrize.src = "LuckyDiceImages/hat.jpg";
+        }
+        if (paramPrize == "Ô tô") {
+            vPrize.src = "LuckyDiceImages/car.jpg";
+        }
+        if (paramPrize == "Áo") {
+            vPrize.src = "LuckyDiceImages/t-shirt.jpg";
+        }
+        if (paramPrize == "Xe máy") {
+            vPrize.src = "LuckyDiceImages/motobike.jpg";
+        }
+    }
+    function callApiDiceHistory(vXmlHttpDiceHistory) {
+        "use strict";
+
+        vXmlHttpDiceHistory.open("GET", gBASE_URL_1 + "/dice-history?username=" + gDataObject.username, true);
+        vXmlHttpDiceHistory.send();
+    }
+    function handlerProcess1(vXmlHttpDiceHistory) {
+        "use strict";
+        vXmlHttpDiceHistory.onreadystatechange = function () {
+            if (this.readyState == gREQUEST_READY_STATUS_FINISH_AND_OK && this.status == gREQUEST_STATUS_OK) {
+                var vDiceHistory = vXmlHttpDiceHistory.responseText;
+                //convert dữ liệu 
+                var vDiceHistoryObj = JSON.parse(vDiceHistory);
+                console.log(vDiceHistory);
+                // hành động hiển thị dữ liệu ra bảng
+                showDiceHistoryTable(vDiceHistoryObj);
+            }
+        }
+
+        // hàm hiển thị dữ liệu ra bảng
+        function showDiceHistoryTable(vDiceHistoryObj) {
+            // truy xuất phần tử tbody trong bảng 
+            var vDiceHistoryTable = document.getElementById("hisory-placeholder-table");
+            var vDiceHistoryBody = vDiceHistoryTable.getElementsByTagName("tbody")[0];
+
+            //xóa trắng dòng dữ liệu của table
+            while (vDiceHistoryTable.rows.length > 0) {
+                vDiceHistoryTable.deleteRow(0);
+            }
+            //làm bảng mới cho 2 cột
+            //thêm dòng
+            var bNewRow = vDiceHistoryBody.insertRow(gEND_bROW_TABLE);
+            //thêm 2 cột
+            var vHeaderGameCell = document.createElement("th");     //cột Lượt
+            vHeaderGameCell.innerHTML = "Lượt";
+            bNewRow.appendChild(vHeaderGameCell);
+
+            var vHeaderResultCell = document.createElement("th");   //cột Kết quả
+            vHeaderResultCell.innerHTML = "Kết Quả";
+            bNewRow.appendChild(vHeaderResultCell);
+
+            for (var bI = 0; bI < vDiceHistoryObj.dices.length; bI++) {
+                // tạo dòng
+                var bNewRow = vDiceHistoryBody.insertRow(gEND_bROW_TABLE);
+                // tạo cột
+                var bLuot = bNewRow.insertCell(0);
+                var bDice = bNewRow.insertCell(1);
+                //gán giá trị
+                bLuot.innerHTML = bI + 1;
+                bDice.innerHTML = vDiceHistoryObj.dices[bI];
+            }
+        }
+    }
+    function callApiVouchHistory(vXmlHttpVoucherHistory) {
+        vXmlHttpVoucherHistory.open("GET", gBASE_URL + "/voucher-history?username=" + gDataObject.username, true);
+        vXmlHttpVoucherHistory.send();
+    }
+    function handlerProcess2(vXmlHttpVoucherHistory) {
+        vXmlHttpVoucherHistory.onreadystatechange =
+            function () {
+                if (this.readyState == gREQUEST_READY_STATUS_FINISH_AND_OK && this.status == gREQUEST_STATUS_OK) {
+                    var vVoucherHistory = vXmlHttpVoucherHistory.responseText;
+                    //console.log(vVoucherHistory)
+                    // conver dữ liệu
+                    var vVoucherHistoryObj = JSON.parse(vVoucherHistory);
+                    console.log(vVoucherHistoryObj);
+                    showVoucherHistoryTable(vVoucherHistoryObj);
+                }
+            }
+    }
+    // hàm hiển thị dữ liệu ra bảng
+    function showVoucherHistoryTable(vVoucherHistoryObj) {
+        // truy xuất phần tử tbody trong bảng 
+        var vVoucherHistoryTable = document.getElementById("hisory-placeholder-table");
+        var vVoucherHistoryBody = vVoucherHistoryTable.getElementsByTagName("tbody")[0];
+
+        //xóa trắng dòng dữ liệu của table
+        while (vVoucherHistoryTable.rows.length > 0) {
+            vVoucherHistoryTable.deleteRow(0);
+        }
+        //làm bảng mới cho 2 cột
+        //thêm dòng
+        var bNewRow = vVoucherHistoryBody.insertRow(gEND_bROW_TABLE);
+        //thêm 2 cột
+        var vHeaderGameCell = document.createElement("th");     //cột Lượt
+        vHeaderGameCell.innerHTML = "Mã Voucher";
+        bNewRow.appendChild(vHeaderGameCell);
+
+        var vHeaderResultCell = document.createElement("th");   //cột Kết quả
+        vHeaderResultCell.innerHTML = "Phần Trăm Giảm Giá";
+        bNewRow.appendChild(vHeaderResultCell);
+
+        for (var bI = 0; bI < vVoucherHistoryObj.vouchers.length; bI++) {
+            // tạo dòng
+            var bNewRow = vVoucherHistoryBody.insertRow(gEND_bROW_TABLE);
+            // tạo cột
+            var bMaVoucher = bNewRow.insertCell(0);
+            var bPhantramGiamGia = bNewRow.insertCell(1);
+            //gán giá trị
+            bMaVoucher.innerHTML = vVoucherHistoryObj.vouchers[bI].maVoucher;
+            bPhantramGiamGia.innerHTML = vVoucherHistoryObj.vouchers[bI].phanTramGiamGia + "%";
+        }
+    }
+    function callApiPrizehHistory(vXmlHtt0pPrizeHistory) {
+        vXmlHtt0pPrizeHistory.open("GET", gBASE_URL + "/prize-history?username=" + gDataObject.username, true);
+        vXmlHtt0pPrizeHistory.send();
+    }
+    function handlerProcess3(vXmlHtt0pPrizeHistory) {
+        vXmlHtt0pPrizeHistory.onreadystatechange = function () {
+            if (this.readyState == gREQUEST_READY_STATUS_FINISH_AND_OK && this.status == gREQUEST_STATUS_OK) {
+                var vPrizeHistory = vXmlHtt0pPrizeHistory.responseText;
+                var vPrizeHistoryObj = JSON.parse(vPrizeHistory);
+                console.log(vPrizeHistory);
+                showPizeHistoryTable(vPrizeHistoryObj);
+            }
+        }
+    }
+    // hàm hiển thị dữ liệu ra bảng
+    function showPizeHistoryTable(vPrizeHistoryObj) {
+        // truy xuất phần tử tbody trong bảng 
+        var vPrizeHistoryTable = document.getElementById("hisory-placeholder-table");
+        var vPrizeHistoryBody = vPrizeHistoryTable.getElementsByTagName("tbody")[0];
+
+        //xóa trắng dòng dữ liệu của table
+        while (vPrizeHistoryTable.rows.length > 0) {
+            vPrizeHistoryTable.deleteRow(0);
+        }
+        //làm bảng mới cho 2 cột
+        //thêm dòng
+        var bNewRow = vPrizeHistoryBody.insertRow(gEND_bROW_TABLE);
+        //thêm 2 cột
+        var vHeaderGameCell = document.createElement("th");     //cột Lượt
+        vHeaderGameCell.innerHTML = "Lượt";
+        bNewRow.appendChild(vHeaderGameCell);
+
+        var vHeaderResultCell = document.createElement("th");   //cột Kết quả
+        vHeaderResultCell.innerHTML = "Quà Tặng";
+        bNewRow.appendChild(vHeaderResultCell);
+
+        for (var bI = 0; bI < vPrizeHistoryObj.prizes.length; bI++) {
+            // tạo dòng
+            var bNewRow = vPrizeHistoryBody.insertRow(gEND_bROW_TABLE);
+            // tạo cột
+            var bLuot = bNewRow.insertCell(0);
+            var bQuaTang = bNewRow.insertCell(1);
+            //gán giá trị
+            bLuot.innerHTML = bI + 1;
+            bQuaTang.innerHTML = vPrizeHistoryObj.prizes[bI];
+        }
+    } 
+</script>
+
+</html>
